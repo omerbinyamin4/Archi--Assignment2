@@ -9,10 +9,12 @@ section .text
 
 assFunc:
     push ebp
-    mov ebp, esp
+    mov ebp, esp	
+    pushad
     mov ecx, [ebp + 8]
     push ecx
     call c_checkValidity
+    add esp, 4
     mov [checkValidityResult], eax
     cmp dword [checkValidityResult], 0
     je uneven
@@ -20,17 +22,19 @@ assFunc:
 
     uneven:
         shl ecx, 3
+        push ecx
         jmp continue
     
     even:
         shl ecx, 2
+        push ecx
         jmp continue
     
     continue:
         push fmtd
-        ;pushad ??
         call printf
         add esp, 8
+        popad
         mov esp, ebp
         pop ebp
         ret

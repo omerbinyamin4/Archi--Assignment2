@@ -8,16 +8,12 @@ char c_checkValidity(int x){
     else return 0;
 }
 
-int main (char argc, char** argv){
+int main (int argc, char** argv){
 //read number from user
-char input;
+char input[50];
 int number;
-while(1){
-    printf("Please insert a number:\n");
-    fgets(input, 50, stdin);
-    sscanf(input, "%d", &number);
-    assFunc(number);
-}
-
+fgets(input, 50, stdin);
+sscanf(input, "%d", &number);
+assFunc(number);
 return 0;
 }
