@@ -19,7 +19,7 @@ convertor:
 	cmp byte [ecx], 113 			; check if the first char is 'q'
 	jz close						; if so quit the function
 	mov eax, 3						; reset EAX reg to 3
-	mov edx, 1						; reset EDX reg to 1
+	mov edx, 1						; reset EDX reg to 1 (first char Flag)
 	jnz looping						; otherwise, go to loop
 	
 	looping:
@@ -68,34 +68,47 @@ convertor:
 		inc ebx						; decrease num of bits counter
 		jmp test_if_first			; go back to dec_to_binary
 
-    next_char:
-		cmp edx, 1
-		jz add_first
-		jnz add_not_first
+    next_char:						
+		cmp edx, 1					; compare edx to 1 (first char Flag)
+		jz add_first				; if so, jump to add_first	
+		jnz add_not_first			; if not, jump to add_not_first
 		
 	add_first:
-		add an, ebx ; how to write?? {0x0, 0x0, 0x31h}
-		add ebx, 4
-		add eax, ebx
-		mov edx, 0
-		jmp next_char_continue
+		mov esi, 4					; set esi with value 4
+		sub esi, ebx				; substract esi with ebx in order to get how many byte we should leap forward
+		add ebx, 4					; add 4 to ebx
+		add eax, ebx				; now [an + eax] points to the 4th free space
+		mov edx, 0					; reset first char flag to 0
+		jmp next_char_continue		; jump to next_char_continue
 
 	add_not_first:
 		add eax, 8					; add 8 to ecx value; now [an + eax] points to the 4th free space
-		jmp next_char_continue
+		jmp next_char_continue		; jump to next_char_continue
 
 		
 	next_char_continue:
 		inc ecx      	  	  		; increment ecx value; now ecx points to the next character of the string
 		cmp byte [ecx], 10			; check if the next character (character = byte) is new line \n
-		jz finish					; if so, print string
+		jz finish_1					; if so, print string
 		jnz looping     			; if not, keep looping until meet null termination character
 
+	add_first_zero:
+		mov byte [esi], 30h			; insert to [esi] 0 
+		jmp finish_2				; continue to print the string
+
+
 	
-	finish:
+	finish_1:
 		sub eax, 3					; sub 3 from eax value; now [an + eax] points to the the first free space
+		add esi, an					; esi now point to start of the string
 		mov byte [an + eax], 0		; add null termination to string
-		push an						; call printf with 2 arguments -  
+		cmp byte [esi], 0			; check if [esi] first byte is null, means we got only 0
+		jz add_first_zero			; if so, go to add_first_zero
+		jnz finish_2				; otherwise, continue to finish the printing
+		
+
+	finish_2:
+		push esi					; call printf with 2 arguments -  
 		push format_string			; pointer to str and pointer to format string
 		call printf
 		add esp, 8					; clean up stack after call
@@ -104,6 +117,7 @@ convertor:
 		mov esp, ebp
 		pop ebp
 		ret
+
 
 	close:
 		popad
